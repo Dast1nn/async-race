@@ -29,7 +29,7 @@ export function CreateCarForm({ onSuccess }: CreateCarFormProps) {
 				onChange={e => setName(e.target.value)}
 				placeholder='Car name'
 				required
-				className='border px-2 py-1 rounded  outline-none'
+				className='border-2 px-2 py-1 rounded border-sky-300  outline-none focus:border-purple-400 transition duration-300 ease-in-out'
 			/>
 			<input
 				type='color'

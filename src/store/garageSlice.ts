@@ -7,16 +7,20 @@ interface Winner {
 	time: number
 }
 
-interface GarageState {
+export interface GarageState {
 	cars: Car[]
-	running: Record<number, boolean>
-	positions: Record<number, 0 | 1>
+	page: number
+	totalCount: number
+	running: Record<number, boolean> // carId => isRunning
+	positions: Record<number, 0 | 1> // carId => 0 | 1
 	shouldStartRace: boolean
 	winner: Winner | null
 }
 
 const initialState: GarageState = {
 	cars: [],
+	page: 1,
+	totalCount: 0,
 	running: {},
 	positions: {},
 	shouldStartRace: false,
@@ -29,6 +33,12 @@ export const garageSlice = createSlice({
 	reducers: {
 		setCars: (state, action: PayloadAction<Car[]>) => {
 			state.cars = action.payload
+		},
+		setPage: (state, action: PayloadAction<number>) => {
+			state.page = action.payload
+		},
+		setTotalCount: (state, action: PayloadAction<number>) => {
+			state.totalCount = action.payload
 		},
 		setRunning: (
 			state,
@@ -46,12 +56,14 @@ export const garageSlice = createSlice({
 			state.shouldStartRace = true
 			state.winner = null
 
-			// Reset all running + positions when race starts
-			for (const id in state.positions) {
-				state.positions[Number(id)] = 0
+			// ✅ Reset ALL positions to 0
+			for (const id of Object.keys(state.positions)) {
+				state.positions[+id] = 0
 			}
-			for (const id in state.running) {
-				state.running[Number(id)] = false
+
+			// ✅ Reset ALL running flags to false
+			for (const id of Object.keys(state.running)) {
+				state.running[+id] = false
 			}
 		},
 		resetRace: state => {
@@ -69,6 +81,8 @@ export const garageSlice = createSlice({
 
 export const {
 	setCars,
+	setPage,
+	setTotalCount,
 	setRunning,
 	setPosition,
 	startRace,

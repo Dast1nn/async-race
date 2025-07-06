@@ -6,7 +6,7 @@ import {
 	getCars,
 	startEngine,
 } from '@/services/carApi'
-import { getWinner } from '@/services/winnerApi'
+import { createWinner, getWinner, updateWinner } from '@/services/winnerApi'
 import { Car } from '@/types/car.type'
 import { defaultCar } from '@/types/defaultCar.type'
 import { generateRandomCars } from '@/utils/carGenerator'
@@ -32,8 +32,8 @@ export function Garage() {
 		name: string
 		time: number
 	}>(null)
-	const itemsPerPage = 4
 
+	const itemsPerPage = 4
 	const handleGenerateCars = async () => {
 		const cars = generateRandomCars(100)
 		try {
@@ -92,55 +92,61 @@ export function Garage() {
 	const handleRace = async () => {
 		setWinner(null)
 		setShouldStartRace(false)
+
 		setTimeout(() => setShouldStartRace(true), 0)
-		const racePromises = cars.map(async car => {
-			try {
-				const { velocity, distance } = await startEngine(car.id)
-				const time = distance / velocity
 
-				await driveEngine(car.id)
-
-				return { id: car.id, name: car.name, time }
-			} catch {
-				return null
-			}
-		})
 		try {
-			const first = await Promise.any(
-				racePromises.map(p =>
-					p.then(result => {
-						if (!result) throw new Error('Failed')
-						return result
-					})
-				)
-			)
-			try {
-				const winnerData = await getWinner(first.id)
-				console.log('Winner DB record:', winnerData)
-				setWinner({
-					id: first.id,
-					name: first.name,
-					time: winnerData.time,
-				})
-			} catch {
-				setWinner(first)
-				setShouldStartRace(false)
-			}
+			const { cars: allCars } = await getCars(1, 200)
 
-			console.log(`Winner: ${first.name}`)
-		} catch {
-			console.log('No car finished the race')
+			const results: { id: number; name: string; time: number }[] = []
+
+			await Promise.all(
+				allCars.map(async car => {
+					try {
+						const { velocity, distance } = await startEngine(car.id)
+						const time = distance / velocity
+						await driveEngine(car.id)
+
+						results.push({ id: car.id, name: car.name, time })
+
+						try {
+							const existing = await getWinner(car.id)
+							await updateWinner(car.id, {
+								wins: existing.wins + 1,
+								time: Math.min(existing.time, time),
+							})
+						} catch {
+							await createWinner({ id: car.id, wins: 1, time })
+						}
+					} catch (err) {
+						console.warn(`Car ${car.id} failed:`, err)
+					}
+				})
+			)
+
+			if (results.length > 0) {
+				const fastest = results.reduce((prev, curr) =>
+					curr.time < prev.time ? curr : prev
+				)
+				setWinner(fastest)
+			} else {
+				console.log('No cars finished')
+			}
+		} catch (error) {
+			console.error('Failed to race all cars:', error)
 		}
+
+		setShouldStartRace(false)
 	}
 
 	const totalPages = Math.ceil(totalCount / itemsPerPage)
 	const selectedCar = cars.find(car => car.id === editingId)
 	return (
 		<div className='p-4'>
-			<div className='flex flex-row gap-5 justify-center '>
+			<div className='flex flex-row gap-5 justify-center mb-3 h-10'>
 				<button
 					onClick={handleRace}
-					className='px-4 py-2 bg-purple-600 text-white rounded'
+					className='px-4 py-2 bg-sky-600 text-white rounded-lg font-semibold uppercase'
 				>
 					Race
 				</button>
@@ -150,7 +156,7 @@ export function Garage() {
 						setTimeout(() => setShouldReset(false), 0)
 						setWinner(null)
 					}}
-					className='px-4 py-2 bg-gray-600 text-white rounded'
+					className='px-4 py-2 bg-gray-600 text-white rounded-lg font-semibold uppercase'
 				>
 					Reset
 				</button>

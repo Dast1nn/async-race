@@ -1,4 +1,6 @@
 import { startEngine, stopEngine } from '@/services/carApi'
+import { faCarSide } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect, useState } from 'react'
 
 type Props = {
@@ -84,15 +86,19 @@ export function AnimationCars({
 				</span>
 			</div>
 
-			<div className='relative h-14 bg-sky-900 rounded overflow-hidden w-[1500px]'>
-				<div
-					className='absolute top-1 left-0 w-12 h-12 rounded-full'
-					style={{
-						backgroundColor: color,
-						transform: position === 1 ? 'translateX(90vw)' : 'translateX(0)',
-						transition: `transform ${duration} linear`,
-					}}
-				/>
+			<div className=' relative h-14 bg-sky-900 rounded-xl overflow-hidden w-[1450px]'>
+				<div className='h-max w-max'>
+					<FontAwesomeIcon
+						icon={faCarSide}
+						className=' w-12 h-12 absolute top-3 left-1 '
+						style={{
+							color: color,
+							fontSize: '35px',
+							transform: position === 1 ? 'translateX(90vw)' : 'translateX(0)',
+							transition: `transform ${duration} linear`,
+						}}
+					/>
+				</div>
 			</div>
 		</div>
 	)

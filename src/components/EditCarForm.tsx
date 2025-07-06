@@ -28,7 +28,7 @@ export function EditCarForm({ car, onUpdate }: EditCarFormProps) {
 				value={name}
 				onChange={e => setName(e.target.value)}
 				placeholder='Update car name'
-				className='border outline-none px-2 py-1 rounded '
+				className='border-2 px-2 py-1 rounded border-sky-300  outline-none focus:border-purple-400  transition duration-300 ease-in-out'
 			/>
 			<input
 				type='color'

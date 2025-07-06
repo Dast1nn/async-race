@@ -17,6 +17,13 @@ export async function getCars(
 
 	return { cars, totalCount }
 }
+
+export async function getCar(id: number): Promise<Car> {
+	const res = await fetch(`${URL}/garage/${id}`)
+	if (!res.ok) throw new Error('Car not found')
+	return res.json()
+}
+
 export async function createCar(car: {
 	name: string
 	color: string
@@ -41,6 +48,7 @@ export async function deleteCar(id: number): Promise<void> {
 		headers: { 'Content-Type': 'application/json' },
 	})
 }
+
 export async function updataCar(
 	id: number,
 	car: { name: string; color: string }
@@ -55,6 +63,7 @@ export async function updataCar(
 	}
 	return response.json()
 }
+
 export async function startEngine(id: number) {
 	const response = await fetch(`${URL}/engine?id=${id}&status=started`, {
 		method: 'PATCH',
@@ -62,6 +71,7 @@ export async function startEngine(id: number) {
 	if (!response.ok) throw new Error(`Failed to start engine for car ID: ${id}`)
 	return response.json()
 }
+
 export async function stopEngine(id: number) {
 	const response = await fetch(`${URL}/engine?id=${id}&status=stopped`, {
 		method: 'PATCH',
@@ -75,5 +85,20 @@ export async function driveEngine(id: number) {
 	})
 	if (!response.ok) {
 		throw new Error(`Drive failed for car ${id}`)
+	}
+}
+
+export async function getAllCars(): Promise<Car[]> {
+	try {
+		const { totalCount } = await getCars(1, 1)
+		const res = await fetch(`${URL}/garage?_page=1&_limit=${totalCount}`)
+		if (!res.ok) {
+			throw new Error('Failed to fetch all cars')
+		}
+
+		return await res.json()
+	} catch (error) {
+		console.error('Failed to fetch all cars:', error)
+		return []
 	}
 }
