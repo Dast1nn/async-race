@@ -13,7 +13,7 @@ export async function getWinner(id: number) {
 export async function getWinners({
 	page = 1,
 	limit = 10,
-	sort = 'id',
+	sort = 'time',
 	order = 'ASC',
 }: {
 	page?: number

@@ -100,13 +100,12 @@ export function Garage() {
 
 			const results: { id: number; name: string; time: number }[] = []
 
-			await Promise.all(
+			await Promise.allSettled(
 				allCars.map(async car => {
 					try {
 						const { velocity, distance } = await startEngine(car.id)
 						const time = distance / velocity
 						await driveEngine(car.id)
-
 						results.push({ id: car.id, name: car.name, time })
 
 						try {
